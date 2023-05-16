@@ -47,6 +47,8 @@ class MainComponentImpl(
         products.value = repository.getProducts()
         tags.value = repository.getTags()
         categories.value = repository.getCategories()
+        Log.d("launch" ,products.value.toString())
+
     }
 
     private fun createChild(
