@@ -3,6 +3,7 @@ package cat.petrushkacat.foodies.core.components.main.foodcatalog.products
 import android.util.Log
 import cat.petrushkacat.foodies.core.components.shared.AddInCartComponent
 import cat.petrushkacat.foodies.core.components.shared.AddInCartComponentImpl
+import cat.petrushkacat.foodies.core.models.Category
 import cat.petrushkacat.foodies.core.models.Product
 import cat.petrushkacat.foodies.core.models.Tag
 import cat.petrushkacat.foodies.core.utils.componentCoroutineScopeDefault
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 class ProductsComponentImpl(
     componentContext: ComponentContext,
     private val products: MutableStateFlow<List<Product>>,
+    private val _categories: StateFlow<List<Category>>,
     tags: StateFlow<List<Tag>>,
     searchText: StateFlow<String>,
     private val onCartClicked: () -> Unit,
@@ -24,8 +26,10 @@ class ProductsComponentImpl(
 ) : ProductsComponent, ComponentContext by componentContext {
 
     private val scopeDefault = componentCoroutineScopeDefault()
+
     private val _models = MutableStateFlow(products.value)
     override val models: StateFlow<List<Product>> = _models.asStateFlow()
+    override val categories: StateFlow<List<Category>> = _categories
 
     init {
 

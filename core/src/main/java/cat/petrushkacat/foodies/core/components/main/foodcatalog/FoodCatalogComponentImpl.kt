@@ -6,6 +6,7 @@ import cat.petrushkacat.foodies.core.components.main.foodcatalog.products.Produc
 import cat.petrushkacat.foodies.core.components.main.foodcatalog.products.ProductsComponentImpl
 import cat.petrushkacat.foodies.core.components.main.foodcatalog.toolbar.FoodCatalogToolbarComponent
 import cat.petrushkacat.foodies.core.components.main.foodcatalog.toolbar.FoodCatalogToolbarComponentImpl
+import cat.petrushkacat.foodies.core.models.Category
 import cat.petrushkacat.foodies.core.models.Product
 import cat.petrushkacat.foodies.core.models.Tag
 import com.arkivanov.decompose.ComponentContext
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class FoodCatalogComponentImpl(
     componentContext: ComponentContext,
     products: MutableStateFlow<List<Product>>,
+    categories: StateFlow<List<Category>>,
     _tags: MutableStateFlow<List<Tag>>,
     onCartClicked: () -> Unit,
     onProductClicked: (Product) -> Unit
@@ -35,6 +37,7 @@ class FoodCatalogComponentImpl(
     override val productsComponent: ProductsComponent = ProductsComponentImpl(
         childContext("food_catalog_products"),
         products,
+        categories,
         selectedTags,
         searchText,
         onCartClicked,

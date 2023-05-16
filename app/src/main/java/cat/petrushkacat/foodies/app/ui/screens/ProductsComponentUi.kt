@@ -1,22 +1,32 @@
 package cat.petrushkacat.foodies.app.ui.screens
 
+import android.util.Log
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.snapping.SnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -26,8 +36,15 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -40,37 +57,117 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cat.petrushkacat.foodies.app.R
 import cat.petrushkacat.foodies.core.components.main.foodcatalog.products.ProductsComponent
+import cat.petrushkacat.foodies.core.models.Category
 import cat.petrushkacat.foodies.core.models.Product
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProductsComponentUi(component: ProductsComponent) {
 
+    val scope = rememberCoroutineScope()
     val model by component.models.collectAsState()
+    val categories by component.categories.collectAsState()
+    val sortedCategories = remember {
+        mutableStateOf(listOf<Category>())
+    }
+    val categoriesState = rememberLazyListState()
+    val productsState = rememberLazyGridState()
 
-    Column(modifier = Modifier.padding(horizontal = 8.dp)) {
+    val products: MutableState<List<Product>> = remember {
+        mutableStateOf(emptyList())
+    }
+    val currentCategoryId = remember { mutableStateOf(0) }
+
+    LaunchedEffect(key1 = currentCategoryId.value) {
+        scope.launch {
+            try {
+                categoriesState.animateScrollToItem(
+                    sortedCategories.value.indexOfFirst {
+                        it.id == currentCategoryId.value
+                    }
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    Column(modifier = Modifier.fillMaxSize()) {
+        LazyRow(state = categoriesState) {
+            items(sortedCategories.value.size) {
+                val thisCategory = sortedCategories.value[it]
+                if (thisCategory.id == currentCategoryId.value) {
+                    Text(
+                        thisCategory.name, modifier = Modifier.clickable {
+                            scope.launch {
+                                products.value.forEachIndexed { i, product ->
+                                    if(product.category_id == thisCategory.id) {
+                                        productsState.animateScrollToItem(i)
+                                        return@launch
+                                    }
+                                }
+                            }
+                        },
+                        style = TextStyle(color = Color.Red)
+                    )
+                } else {
+                    Text(sortedCategories.value[it].name, modifier = Modifier.clickable {
+                        scope.launch {
+                            products.value.forEachIndexed { i, product ->
+                                if(product.category_id == sortedCategories.value[it].id) {
+                                    productsState.animateScrollToItem(i)
+                                    return@launch
+                                }
+                            }
+                        }
+                    })
+                }
+            }
+        }
         LazyVerticalGrid(
-            state = rememberLazyGridState(),
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(7f),
+            userScrollEnabled = true,
+            state = productsState,
+            modifier = Modifier,
             columns = GridCells.Adaptive(150.dp), content = {
-                items(model.size) {
+                items(products.value.size) {
+                    currentCategoryId.value = products.value[it].category_id
                     ProductItem(
-                        product = model[it], onProductClick = component::onProductClick,
+                        product = products.value[it],
+                        onProductClick = component::onProductClick,
                         onButtonPlusClick = component.addInCartComponent::plusItem,
                         onButtonMinusClick = component.addInCartComponent::minusItem
                     )
                 }
             })
+
         Button(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 16.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 16.dp)
                 .shadow(1.dp, clip = true, shape = RoundedCornerShape(8.dp))
                 .height(48.dp),
             onClick = { component.onCartButtonClick() }) {
             Text("shopping cart")
+        }
+    }
+
+    LaunchedEffect(key1 = model) {
+        scope.launch {
+            val temp: MutableMap<Int, MutableList<Product>> = mutableMapOf()
+            val tempCategories: MutableList<Category> = mutableListOf()
+            model.forEach { product ->
+                if (temp[product.category_id] == null) {
+                    tempCategories.add(categories.first { it.id == product.category_id })
+                    temp[product.category_id] = mutableListOf(product)
+                } else {
+                    temp[product.category_id]?.add(product)
+                }
+            }
+            sortedCategories.value = tempCategories
+            products.value = temp.toList().flatMap {
+                it.second
+            }
         }
     }
 }
@@ -82,12 +179,13 @@ fun ProductItem(
     onButtonPlusClick: (Int) -> Unit,
     onButtonMinusClick: (Int) -> Unit
 ) {
-    Column(modifier = Modifier
-        .padding(4.dp)
-        .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp))
-        .clickable {
-            onProductClick(product)
-        },
+    Column(
+        modifier = Modifier
+            .padding(4.dp)
+            .background(color = Color.LightGray, shape = RoundedCornerShape(8.dp))
+            .clickable {
+                onProductClick(product)
+            },
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Image(
@@ -115,7 +213,10 @@ fun ProductItem(
                     .shadow(2.dp, clip = true, shape = RoundedCornerShape(8.dp))
                     .height(40.dp)
                     .background(color = Color.White),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.DarkGray),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color.DarkGray
+                ),
                 onClick = {
                     onButtonPlusClick(product.id)
                 },
@@ -130,7 +231,7 @@ fun ProductItem(
                         product.price_current.toString() + "₽",
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight(500)),
 
-                    )
+                        )
                     if (product.price_old != 0) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -143,7 +244,9 @@ fun ProductItem(
             }
         } else {
             Row(
-                modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -152,7 +255,10 @@ fun ProductItem(
                         .shadow(2.dp, clip = true, shape = RoundedCornerShape(8.dp))
                         .size(40.dp)
                         .background(color = Color.White),
-                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color.White, contentColor = Color.Red),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Red
+                    ),
                     shape = RoundedCornerShape(8.dp),
                     onClick = {
                         onButtonMinusClick(product.id)
@@ -176,7 +282,10 @@ fun ProductItem(
                         .shadow(2.dp, clip = true, shape = RoundedCornerShape(8.dp))
                         .size(40.dp)
                         .background(color = Color.White, shape = RoundedCornerShape(8.dp)),
-                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color.White, contentColor = Color.Red),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Red
+                    ),
                     shape = RoundedCornerShape(8.dp),
                     onClick = {
                         onButtonPlusClick(product.id)

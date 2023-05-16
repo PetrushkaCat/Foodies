@@ -42,7 +42,7 @@ class AddInCartComponentImpl(
             var index: Int = -1
             temp.forEachIndexed {i, it ->
                 if (it.id == itemId) {
-                    if (it.quantity > 0) {
+                    if (it.quantity > 0 ) {
                         index = i
                         oldProduct = it
                         return@forEachIndexed
