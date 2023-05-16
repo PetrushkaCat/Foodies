@@ -8,7 +8,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import cat.petrushkacat.foodies.app.ui.screens.MainComponentUi
+import cat.petrushkacat.foodies.app.ui.screens.RootComponentUi
 import cat.petrushkacat.foodies.app.ui.theme.FoodiesTheme
+import cat.petrushkacat.foodies.core.components.RootComponentImpl
 import cat.petrushkacat.foodies.core.components.main.MainComponentImpl
 import cat.petrushkacat.foodies.data.repository.RepositoryImpl
 import com.arkivanov.decompose.defaultComponentContext
@@ -18,7 +20,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val repository = RepositoryImpl()
-        val component = MainComponentImpl(defaultComponentContext(), repository)
+        val component = RootComponentImpl(defaultComponentContext(), repository)
 
         setContent {
             FoodiesTheme {
@@ -27,7 +29,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainComponentUi(component = component)
+                    RootComponentUi(component = component)
                 }
             }
         }

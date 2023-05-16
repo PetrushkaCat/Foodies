@@ -7,6 +7,7 @@ import cat.petrushkacat.foodies.core.components.main.foodcatalog.FoodCatalogComp
 import cat.petrushkacat.foodies.core.components.main.shoppingcart.ShoppingCartComponentImpl
 import cat.petrushkacat.foodies.core.models.Category
 import cat.petrushkacat.foodies.core.models.Product
+import cat.petrushkacat.foodies.core.models.ShoppingCartInfo
 import cat.petrushkacat.foodies.core.models.Tag
 import cat.petrushkacat.foodies.core.utils.componentCoroutineScopeDefault
 import cat.petrushkacat.foodies.core.utils.toStateFlow
@@ -32,6 +33,7 @@ class MainComponentImpl(
     private val products = MutableStateFlow<List<Product>>(emptyList())
     private val tags = MutableStateFlow<List<Tag>>(emptyList())
     private val categories = MutableStateFlow<List<Category>>(emptyList())
+    private val shoppingCartInfo = MutableStateFlow(ShoppingCartInfo(0,0))
 
     override val childStack: StateFlow<ChildStack<*, MainComponent.Child>> = childStack(
         source = navigation,
@@ -41,6 +43,7 @@ class MainComponentImpl(
     ).toStateFlow(lifecycle)
 
     init {
+        Log.d("launch" ,"2")
         products.value = repository.getProducts()
         tags.value = repository.getTags()
         categories.value = repository.getCategories()
@@ -56,6 +59,7 @@ class MainComponentImpl(
                     componentContext = componentContext,
                     products = products,
                     categories = categories,
+                    shoppingCartInfo = shoppingCartInfo,
                     _tags = tags,
                     onCartClicked = {
                         navigation.push(ChildConfig.ShoppingCart)
@@ -72,6 +76,7 @@ class MainComponentImpl(
                     componentContext = componentContext,
                     products = products,
                     product = config.product,
+                    shoppingCartInfo = shoppingCartInfo,
                     onBackClicked = {
                         navigation.pop()
                     }
@@ -83,6 +88,7 @@ class MainComponentImpl(
                 ShoppingCartComponentImpl(
                     componentContext = componentContext,
                     products = products,
+                    _shoppingCartInfo = shoppingCartInfo,
                     onBackClicked = {
                         navigation.pop()
                     }

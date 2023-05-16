@@ -1,6 +1,7 @@
 package cat.petrushkacat.foodies.app.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +41,16 @@ val Typography = Typography(
     labelMedium = TextStyle(
         fontSize = 14.sp,
         lineHeight = 20.sp
+    ),
+    headlineLarge = TextStyle(
+        fontSize = 34.sp,
+        lineHeight = 26.sp
+    ),
+    headlineMedium = TextStyle(
+        fontSize = 20.sp,
+        lineHeight = 24.sp,
+        color = Color.Black,
+        fontWeight = FontWeight(1000)
     )
 
 )

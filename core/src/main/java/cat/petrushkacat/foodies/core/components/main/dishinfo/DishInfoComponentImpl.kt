@@ -3,6 +3,7 @@ package cat.petrushkacat.foodies.core.components.main.dishinfo
 import cat.petrushkacat.foodies.core.components.shared.AddInCartComponent
 import cat.petrushkacat.foodies.core.components.shared.AddInCartComponentImpl
 import cat.petrushkacat.foodies.core.models.Product
+import cat.petrushkacat.foodies.core.models.ShoppingCartInfo
 import cat.petrushkacat.foodies.core.utils.componentCoroutineScopeDefault
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 class DishInfoComponentImpl(
     componentContext: ComponentContext,
     products: MutableStateFlow<List<Product>>,
+    shoppingCartInfo: MutableStateFlow<ShoppingCartInfo>,
     product: Product,
     private val onBackClicked: () -> Unit
 ) : DishInfoComponent, ComponentContext by componentContext {
@@ -21,7 +23,8 @@ class DishInfoComponentImpl(
     private val scope = componentCoroutineScopeDefault()
     override val addInCartComponent: AddInCartComponent = AddInCartComponentImpl(
         childContext("dish_info_add_in_cart"),
-        products
+        products,
+        shoppingCartInfo
     )
     private val _models = MutableStateFlow(product)
     override val models = _models.asStateFlow()

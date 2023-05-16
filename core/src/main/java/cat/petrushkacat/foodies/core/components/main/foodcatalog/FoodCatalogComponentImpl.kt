@@ -8,6 +8,7 @@ import cat.petrushkacat.foodies.core.components.main.foodcatalog.toolbar.FoodCat
 import cat.petrushkacat.foodies.core.components.main.foodcatalog.toolbar.FoodCatalogToolbarComponentImpl
 import cat.petrushkacat.foodies.core.models.Category
 import cat.petrushkacat.foodies.core.models.Product
+import cat.petrushkacat.foodies.core.models.ShoppingCartInfo
 import cat.petrushkacat.foodies.core.models.Tag
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.childContext
@@ -19,6 +20,7 @@ class FoodCatalogComponentImpl(
     componentContext: ComponentContext,
     products: MutableStateFlow<List<Product>>,
     categories: StateFlow<List<Category>>,
+    shoppingCartInfo: MutableStateFlow<ShoppingCartInfo>,
     _tags: MutableStateFlow<List<Tag>>,
     onCartClicked: () -> Unit,
     onProductClicked: (Product) -> Unit
@@ -29,6 +31,7 @@ class FoodCatalogComponentImpl(
     private val selectedTags = MutableStateFlow<List<Tag>>(emptyList())
 
     override val toolbarComponent: FoodCatalogToolbarComponent = FoodCatalogToolbarComponentImpl(
+        selectedTags,
         onSearched = {
             searchText.value = it
         }
@@ -38,6 +41,7 @@ class FoodCatalogComponentImpl(
         childContext("food_catalog_products"),
         products,
         categories,
+        shoppingCartInfo,
         selectedTags,
         searchText,
         onCartClicked,

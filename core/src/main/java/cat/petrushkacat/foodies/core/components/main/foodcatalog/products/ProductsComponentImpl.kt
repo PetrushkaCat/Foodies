@@ -5,6 +5,7 @@ import cat.petrushkacat.foodies.core.components.shared.AddInCartComponent
 import cat.petrushkacat.foodies.core.components.shared.AddInCartComponentImpl
 import cat.petrushkacat.foodies.core.models.Category
 import cat.petrushkacat.foodies.core.models.Product
+import cat.petrushkacat.foodies.core.models.ShoppingCartInfo
 import cat.petrushkacat.foodies.core.models.Tag
 import cat.petrushkacat.foodies.core.utils.componentCoroutineScopeDefault
 import com.arkivanov.decompose.ComponentContext
@@ -19,6 +20,7 @@ class ProductsComponentImpl(
     componentContext: ComponentContext,
     private val products: MutableStateFlow<List<Product>>,
     private val _categories: StateFlow<List<Category>>,
+    private val _shoppingCartInfo: MutableStateFlow<ShoppingCartInfo>,
     tags: StateFlow<List<Tag>>,
     searchText: StateFlow<String>,
     private val onCartClicked: () -> Unit,
@@ -30,6 +32,7 @@ class ProductsComponentImpl(
     private val _models = MutableStateFlow(products.value)
     override val models: StateFlow<List<Product>> = _models.asStateFlow()
     override val categories: StateFlow<List<Category>> = _categories
+    override val shoppingCartInfo = _shoppingCartInfo.asStateFlow()
 
     init {
 
@@ -68,7 +71,8 @@ class ProductsComponentImpl(
 
     override val addInCartComponent: AddInCartComponent = AddInCartComponentImpl(
         childContext("products_add_in_cart"),
-        products
+        products,
+        _shoppingCartInfo
     )
 
     override fun onCartButtonClick() {

@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.room.common)
 
     implementation ("com.airbnb.android:lottie-compose:6.0.0")
+    implementation ("androidx.core:core-splashscreen:1.0.1")
 
     testImplementation(libs.junit.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

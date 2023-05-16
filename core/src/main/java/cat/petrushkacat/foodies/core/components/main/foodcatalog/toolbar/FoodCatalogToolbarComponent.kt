@@ -1,8 +1,10 @@
 package cat.petrushkacat.foodies.core.components.main.foodcatalog.toolbar
 
+import cat.petrushkacat.foodies.core.models.Tag
+import kotlinx.coroutines.flow.StateFlow
+
 interface FoodCatalogToolbarComponent {
 
-   // fun onFilterButtonClick()
-
+    val selectedTags: StateFlow<List<Tag>>
     fun onSearch(text: String)
 }
