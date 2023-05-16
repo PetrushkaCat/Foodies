@@ -5,20 +5,17 @@
   Ну и по сути это все интересные здесь фреймворки 
 
   Главная сущность в программе - это products (StateFlow<List<Product>>)
-  При запуске программы MainComponent получает products из репозитория, и передает его в дочерние компоненты, которые подписываются на изменения сущности.
-  Изеняет (изменияет поле quantity, символизируя добавление в корзину) products только AddInCartComponent.
-  Схему программы можно представить так:
-                                                                  RootComponent
-                                                                 /              \
-                                                    MainComponent                SplashScreen
-                                                  /         |      \
-                                       FoodCatalog  ShoppingCart  DishInfo
-                                    /     |     \           |         \
-                              Filter   Toolbar  Products    |           \
-                                                 /          |             \
-                              AddInCartComponent    AddInCartComponent   AddInCartComponent
   
+  При запуске программы MainComponent получает products из репозитория, и передает его в дочерние компоненты, которые подписываются на изменения сущности.
+  
+  Изеняет (изменияет поле quantity, символизируя добавление в корзину) products только AddInCartComponent.
+  
+  Схему программы можно представить так:
+  
+![image](https://github.com/PetrushkaCat/Foodies/assets/107431204/526943e7-7231-457e-a9ab-bd4b19a7a9fa)
+
   У каждого компонента есть свой экран (или часть). Друг с другом они взаимодействуют при помощи паттерна mvvm + mvi :)
+  
   Их еще попробуй разлечи, хпх
   
 ![image](https://github.com/PetrushkaCat/Foodies/assets/107431204/4cd33de5-cf37-4075-8352-6d1110b8be54)
