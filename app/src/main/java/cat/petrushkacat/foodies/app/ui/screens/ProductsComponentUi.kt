@@ -1,8 +1,12 @@
 package cat.petrushkacat.foodies.app.ui.screens
 
+import android.util.Log
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
@@ -37,6 +40,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -52,9 +56,13 @@ import cat.petrushkacat.foodies.app.ui.screens.shared.AddInCartButton
 import cat.petrushkacat.foodies.core.components.main.foodcatalog.products.ProductsComponent
 import cat.petrushkacat.foodies.core.models.Category
 import cat.petrushkacat.foodies.core.models.Product
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProductsComponentUi(component: ProductsComponent) {
 
@@ -74,9 +82,9 @@ fun ProductsComponentUi(component: ProductsComponent) {
     }
     val currentCategoryId = remember { mutableStateOf(0) }
 
-    val oldProductsSize = rememberSaveable {
-        mutableStateOf(products.value.size)
-    }
+    val oldProductsSize = rememberSaveable { mutableStateOf(products.value.size) }
+
+    val isCategoryClicked = remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -97,12 +105,18 @@ fun ProductsComponentUi(component: ProductsComponent) {
                     isCurrent = thisCategory.id == currentCategoryId.value
                 ) {
                     scope.launch {
+                        isCategoryClicked.value = true
                         products.value.forEachIndexed { i, product ->
                             if (product.category_id == thisCategory.id) {
+                                productsState.animateScrollBy(
+                                    (i - productsState.firstVisibleItemIndex) * 395f,
+                                    tween((i - productsState.firstVisibleItemIndex).absoluteValue * 200)
+                                )
                                 productsState.animateScrollToItem(i)
                                 return@launch
                             }
                         }
+                        isCategoryClicked.value = false
                     }
 
                 }
@@ -117,8 +131,9 @@ fun ProductsComponentUi(component: ProductsComponent) {
                     .weight(1f),
                 columns = GridCells.Adaptive(150.dp), content = {
                     items(products.value.size) {
-                        currentCategoryId.value = products.value[it].category_id
                         ProductItem(
+                            Modifier,
+                                //.animateItemPlacement(tween(500)),
                             product = products.value[it],
                             onProductClick = component::onProductClick,
                             onButtonPlusClick = component.addInCartComponent::plusItem,
@@ -141,23 +156,41 @@ fun ProductsComponentUi(component: ProductsComponent) {
                             shoppingCartInfo.itemsQuantity.toString(),
                             style = TextStyle(fontSize = 10.sp, color = Color.White),
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.background(
-                                MaterialTheme.colorScheme.primary,
-                                shape = CircleShape
-                            ).align(Alignment.TopStart).size(14.dp)
+                            modifier = Modifier
+                                .background(
+                                    MaterialTheme.colorScheme.primary,
+                                    shape = CircleShape
+                                )
+                                .align(Alignment.TopStart)
+                                .size(14.dp)
                         )
                         Icon(
                             painterResource(id = R.drawable.img_cart),
                             null,
                             tint = Color.White,
-                            modifier = Modifier.size(40.dp).padding(5.dp)
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(5.dp)
                         )
                     }
 
-                    Text(shoppingCartInfo.itemsPrice.toString() + " ₽",
+                    Text(
+                        shoppingCartInfo.itemsPrice.toString() + " ₽",
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight(500))
                     )
                 }
+            }
+        }
+    }
+
+    Log.d("ProductsScreen", "recomposition...")
+    LaunchedEffect(key1 = productsState) {
+        delay(500)
+        snapshotFlow { productsState.firstVisibleItemIndex }.collect {
+            try {
+                currentCategoryId.value = products.value[it + 1].category_id
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -173,7 +206,7 @@ fun ProductsComponentUi(component: ProductsComponent) {
     }
 
     LaunchedEffect(key1 = model) {
-        scope.launch {
+        CoroutineScope(Dispatchers.Default).launch {
             val temp: MutableMap<Int, MutableList<Product>> = mutableMapOf()
             val tempCategories: MutableList<Category> = mutableListOf()
             model.forEach { product ->
@@ -193,7 +226,6 @@ fun ProductsComponentUi(component: ProductsComponent) {
 
     LaunchedEffect(key1 = currentCategoryId.value) {
         scope.launch {
-            delay(300)
             try {
                 categoriesState.animateScrollToItem(
                     sortedCategories.value.indexOfFirst {
@@ -204,6 +236,7 @@ fun ProductsComponentUi(component: ProductsComponent) {
                 e.printStackTrace()
             }
         }
+
     }
 }
 
@@ -230,13 +263,14 @@ fun CategoryItem(category: Category, isCurrent: Boolean, onClick: () -> Unit) {
 
 @Composable
 fun ProductItem(
+    modifier: Modifier,
     product: Product,
     onProductClick: (Product) -> Unit,
     onButtonPlusClick: (Int) -> Unit,
     onButtonMinusClick: (Int) -> Unit
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(4.dp)
             .background(
                 color = cat.petrushkacat.foodies.app.ui.theme.LightGray,
@@ -249,25 +283,28 @@ fun ProductItem(
     ) {
         Box(modifier = Modifier.padding(8.dp)) {
             Row {
-                if(product.price_old != 0) {
-                    Image(painterResource
-                        (id = R.drawable.img_discount),
+                if (product.price_old != 0) {
+                    Image(
+                        painterResource
+                            (id = R.drawable.img_discount),
                         null,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                 }
-                if(product.tag_ids.contains(2)) {
-                    Image(painterResource
-                        (id = R.drawable.img_vegan),
+                if (product.tag_ids.contains(2)) {
+                    Image(
+                        painterResource
+                            (id = R.drawable.img_vegan),
                         null,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                 }
-                if(product.tag_ids.contains(4)) {
-                    Image(painterResource
-                        (id = R.drawable.img_hot),
+                if (product.tag_ids.contains(4)) {
+                    Image(
+                        painterResource
+                            (id = R.drawable.img_hot),
                         null,
                         modifier = Modifier.size(24.dp)
                     )

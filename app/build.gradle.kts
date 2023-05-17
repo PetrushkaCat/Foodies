@@ -1,8 +1,8 @@
 plugins {
     id ("com.android.application")
     id ("org.jetbrains.kotlin.android")
-    id("dagger.hilt.android.plugin")
-    kotlin("kapt")
+  /*id("dagger.hilt.android.plugin")
+    kotlin("kapt")*/
 }
 
 android {
@@ -59,7 +59,7 @@ dependencies {
 
     implementation (libs.androidx.core.ktx)
     implementation (libs.androidx.lifecycle.runtime.ktx)
-    implementation (libs.androidx.datastore.preferences)
+    //implementation (libs.androidx.datastore.preferences)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
@@ -79,13 +79,14 @@ dependencies {
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
 
-    implementation(libs.hilt.android)
+  /*implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
-    implementation(libs.room.common)
+    implementation(libs.room.common)*/
 
     implementation ("com.airbnb.android:lottie-compose:6.0.0")
-    implementation ("androidx.core:core-splashscreen:1.0.1")
+
+    //implementation ("androidx.paging:paging-compose:1.0.0-alpha19")
 
     testImplementation(libs.junit.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)

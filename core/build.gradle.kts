@@ -3,8 +3,8 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
     id ("kotlin-parcelize")
-    id("dagger.hilt.android.plugin")
-    kotlin("kapt")
+  /*id("dagger.hilt.android.plugin")
+    kotlin("kapt")*/
 }
 
 android {
@@ -49,10 +49,10 @@ dependencies {
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
 
-    implementation(libs.room.common)
+    //implementation(libs.room.common)
 
-    implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    /*implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)*/
 
     testImplementation(libs.junit.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
