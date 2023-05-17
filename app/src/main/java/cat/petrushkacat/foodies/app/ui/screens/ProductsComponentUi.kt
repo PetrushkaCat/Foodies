@@ -1,6 +1,7 @@
 package cat.petrushkacat.foodies.app.ui.screens
 
 import android.util.Log
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -110,7 +111,8 @@ fun ProductsComponentUi(component: ProductsComponent) {
                             if (product.category_id == thisCategory.id) {
                                 productsState.animateScrollBy(
                                     (i - productsState.firstVisibleItemIndex) * 395f,
-                                    tween((i - productsState.firstVisibleItemIndex).absoluteValue * 200)
+                                    tween((i - productsState.firstVisibleItemIndex).absoluteValue * 50,
+                                        easing = LinearEasing)
                                 )
                                 productsState.animateScrollToItem(i)
                                 return@launch
