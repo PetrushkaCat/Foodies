@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 
 class ProductsComponentImpl(
     componentContext: ComponentContext,
-    private val products: MutableStateFlow<List<Product>>,
+    private val products: MutableStateFlow<List<Product>>, // the main products list
     private val _categories: StateFlow<List<Category>>,
     private val _shoppingCartInfo: MutableStateFlow<ShoppingCartInfo>,
     tags: StateFlow<List<Tag>>,
@@ -29,13 +29,13 @@ class ProductsComponentImpl(
 
     private val scopeDefault = componentCoroutineScopeDefault()
 
-    private val _models = MutableStateFlow(products.value)
-    override val models: StateFlow<List<Product>> = _models.asStateFlow()
+    private val _models = MutableStateFlow(products.value)                 // what we will show to users
+    override val models: StateFlow<List<Product>> = _models.asStateFlow()  // depends on tags and search
+
     override val categories: StateFlow<List<Category>> = _categories
     override val shoppingCartInfo = _shoppingCartInfo.asStateFlow()
 
     init {
-
         scopeDefault.launch {
             launch {
                 tags.collect { tags ->
@@ -56,6 +56,7 @@ class ProductsComponentImpl(
                 }
             }
             launch {
+                // when user taps on plus or minus. And we also want to add tags or search query if searching
                 products.collect {
                     if(searchText.value.trim().isEmpty()) {
                         filterWithTags(tags.value)
@@ -91,8 +92,5 @@ class ProductsComponentImpl(
                 product.tag_ids.containsAll(tags.map { it.id })
             }
         }
-        Log.d("tags", "11" + models.value.toString())
-        Log.d("tags", "11" + products.value.toString())
-
     }
 }

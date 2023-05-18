@@ -29,16 +29,16 @@ class ShoppingCartComponentImpl(
         _shoppingCartInfo
     )
 
-    override val models = MutableStateFlow<List<Product>>(emptyList())
+    private val _models = MutableStateFlow<List<Product>>(emptyList())
+    override val models = _models.asStateFlow()
     override val shoppingCartInfo = _shoppingCartInfo.asStateFlow()
 
     init {
         scopeDefault.launch {
             products.collect { products ->
-                models.value = products.filter {
+                _models.value = products.filter {
                     it.quantity > 0
                 }
-                Log.d("state", "state")
             }
         }
     }

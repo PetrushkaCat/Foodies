@@ -27,7 +27,6 @@ class MainComponentImpl(
     private val repository: Repository
 ) : MainComponent, ComponentContext by componentContext {
 
-    val scopeDefault = componentCoroutineScopeDefault()
     private val navigation = StackNavigation<ChildConfig>()
 
     private val products = MutableStateFlow<List<Product>>(emptyList())
@@ -43,12 +42,9 @@ class MainComponentImpl(
     ).toStateFlow(lifecycle)
 
     init {
-        Log.d("launch" ,"2")
         products.value = repository.getProducts()
         tags.value = repository.getTags()
         categories.value = repository.getCategories()
-        Log.d("launch" ,products.value.toString())
-
     }
 
     private fun createChild(

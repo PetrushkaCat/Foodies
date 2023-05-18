@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -49,6 +50,21 @@ fun ShoppingCartComponentUi(component: ShoppingCartComponent) {
 
     val model by component.models.collectAsState()
     val shoppingCartInfo by component.shoppingCartInfo.collectAsState()
+
+
+    if(model.isEmpty()) {
+        Column(modifier = Modifier
+            .padding(24.dp)
+            .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text("В корзине пусто. Выберете блюда из каталога :)",
+                style = MaterialTheme.typography.bodyMedium.copy(Color.Gray),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
 
     Column() {
         TopAppBar(
@@ -93,20 +109,27 @@ fun ShoppingCartComponentUi(component: ShoppingCartComponent) {
                         Divider(Modifier.fillMaxWidth())
                     }
                 })
-            Button(
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 12.dp)
-                    .shadow(1.dp, clip = true, shape = RoundedCornerShape(8.dp))
-                    .height(48.dp),
-                onClick = { },
-                content = {
-                    Text("Оформить за " + shoppingCartInfo.itemsPrice.toString() + " ₽",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight(500))
-                    )
-                }
-            )
+            if(model.isNotEmpty()) {
+                Button(
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 12.dp)
+                        .shadow(1.dp, clip = true, shape = RoundedCornerShape(8.dp))
+                        .height(48.dp),
+                    onClick = { },
+                    content = {
+                        Text(
+                            "Оформить за " + shoppingCartInfo.itemsPrice.toString() + " ₽",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight(
+                                    500
+                                )
+                            )
+                        )
+                    }
+                )
+            }
         }
     }
 }

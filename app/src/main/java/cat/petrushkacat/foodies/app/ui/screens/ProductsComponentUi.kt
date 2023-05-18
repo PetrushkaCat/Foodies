@@ -63,7 +63,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProductsComponentUi(component: ProductsComponent) {
 
@@ -86,6 +85,21 @@ fun ProductsComponentUi(component: ProductsComponent) {
     val oldProductsSize = rememberSaveable { mutableStateOf(products.value.size) }
 
     val isCategoryClicked = remember { mutableStateOf(false) }
+
+
+    if(model.isEmpty()) {
+        Column(modifier = Modifier
+            .padding(24.dp)
+            .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {//захардкожено :(
+            Text("Упс, ничего не найдено...",
+                style = MaterialTheme.typography.bodyMedium.copy(Color.Gray),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -185,28 +199,17 @@ fun ProductsComponentUi(component: ProductsComponent) {
         }
     }
 
-    Log.d("ProductsScreen", "recomposition...")
-    LaunchedEffect(key1 = productsState) {
-        delay(500)
-        snapshotFlow { productsState.firstVisibleItemIndex }.collect {
-            try {
-                currentCategoryId.value = products.value[it + 1].category_id
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
+    //When user use filter or searching it scrolls to start of the list
     SideEffect {
         scope.launch {
-            delay(500)
+            delay(500) //when navigate from details screen we have to wait because products are not yet loaded
             if (products.value.size != oldProductsSize.value) {
                 productsState.scrollToItem(1)
                 oldProductsSize.value = products.value.size
             }
         }
     }
-
+    //Sorting, to make products in one category be in the same part of the list
     LaunchedEffect(key1 = model) {
         CoroutineScope(Dispatchers.Default).launch {
             val temp: MutableMap<Int, MutableList<Product>> = mutableMapOf()
@@ -225,7 +228,7 @@ fun ProductsComponentUi(component: ProductsComponent) {
             }
         }
     }
-
+    //Scrolls categories
     LaunchedEffect(key1 = currentCategoryId.value) {
         scope.launch {
             try {
@@ -238,7 +241,18 @@ fun ProductsComponentUi(component: ProductsComponent) {
                 e.printStackTrace()
             }
         }
-
+    }
+    //when visible category in products changes it changes currentCategoryId and the func above is called
+    Log.d("ProductsScreen", "recomposition...")
+    LaunchedEffect(key1 = productsState) {
+        delay(500) //when app starts we have to wait because products are not yet loaded
+        snapshotFlow { productsState.firstVisibleItemIndex }.collect {
+            try {
+                currentCategoryId.value = products.value[it + 1].category_id
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }
 

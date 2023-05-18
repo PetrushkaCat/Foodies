@@ -32,6 +32,7 @@ class FilterComponentImpl(
     override fun onTagClick(tag: Tag) {
         val temp = models.value.toMutableList()
 
+        //flow wont send changes to observers if we just change isSelected, we have to change the list
         var tagIndex: Int = -1
         models.value.forEachIndexed {i, it ->
             if(it.id == tag.id) {

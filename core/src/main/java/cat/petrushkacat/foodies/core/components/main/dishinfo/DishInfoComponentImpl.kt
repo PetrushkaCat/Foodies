@@ -31,6 +31,7 @@ class DishInfoComponentImpl(
 
     init {
         scope.launch {
+            // why so? we have to observe the product quantity changes...
             products.collect {
                 _models.value = products.value.first { it.id == product.id }
             }
